@@ -1,0 +1,42 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ Master ]
+  workflow_dispatch:
+
+env:
+  DOCKERHUB_USER: 3booda24
+  APP_IMAGE: vprofileapp
+  DB_IMAGE: vprofiledb
+  TAG: latest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push App image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Docker-files/app
+          push: true
+          tags: ${{ env.DOCKERHUB_USER }}/${{ env.APP_IMAGE }}:${{ env.TAG }}
+
+      - name: Build and push DB image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Docker-files/db
+          push: true
+          tags: ${{ env.DOCKERHUB_USER }}/${{ env.DB_IMAGE }}:${{ env.TAG }}
